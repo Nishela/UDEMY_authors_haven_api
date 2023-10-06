@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    # Тома для монтирования
+    volumes:
+      - .:/app:z  # Текущая директория монтируется в /app контейнера. Флаг z для SELinux
+      - static_volume:/app/staticfiles  # Том для статических файлов
+      - media_volume:/app/mediafiles  # Том для медиафайлов
+    # Настройка портов
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    depends_on:
+      - postgres
+      - mailhog
+    # Команда для запуска сервиса
+    command: /start.sh
+    # Используемые сети
+    networks:
+      - authors-api
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./docker/local/postgres/Dockerfile
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data  # Том для данных PostgreSQL
+      - local_postgres_data_backups:/backups  # Том для резервных копий
+    env_file:
+      - ./.envs/.local/.postgres
+    networks:
+      - authors-api
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.0  # Изображение из Docker Hub
+    container_name: mailhog
+    ports:
+      - "8025:8025"  # Проброс порта
+    networks:
+      - authors-api
+
+networks:
+    authors-api:
+        driver: bridge  # Используем драйвер моста
+
+volumes:
+    local_postgres_data: {}  # Том для данных PostgreSQL
+    local_postgres_data_backups: {}  # Том для резервных копий
+    static_volume:  # Том для статических файлов
+    media_volume:  # Том для медиафайлов
