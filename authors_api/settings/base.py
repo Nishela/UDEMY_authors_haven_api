@@ -159,7 +159,7 @@ LOGGING = {
     "formatters": {
         "verbose": {
             "format": "%(levelname)s %(name)-12s %(asctime)s %(module)s "
-            "%(process)d %(thread)d %(message)s"
+                      "%(process)d %(thread)d %(message)s"
         }
     },
     "handlers": {
@@ -171,3 +171,5 @@ LOGGING = {
     },
     "root": {"level": "INFO", "handlers": ["console"]},
 }
+
+AUTH_USER_MODEL = "users.User"

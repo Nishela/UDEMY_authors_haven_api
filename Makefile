@@ -54,3 +54,6 @@ isort-diff:
 
 isort:
 	docker compose -f local.yml exec api isort . --skip venv --skip migrations
+
+shell:
+	docker compose -f local.yml run --rm api python manage.py shell
