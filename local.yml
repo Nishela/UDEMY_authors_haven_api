@@ -5,23 +5,19 @@ services:
     build:
       context: .
       dockerfile: ./docker/local/django/Dockerfile
-    # Тома для монтирования
     volumes:
-      - .:/app:z  # Текущая директория монтируется в /app контейнера. Флаг z для SELinux
-      - static_volume:/app/staticfiles  # Том для статических файлов
-      - media_volume:/app/mediafiles  # Том для медиафайлов
-    # Настройка портов
-    ports:
-      - "8000:8000"
+      - .:/app:z  # Монтирование рабочей директории
+      - static_volume:/app/staticfiles  # Том статики
+      - media_volume:/app/mediafiles  # Том медиафайлов
+    expose: # контейнер слушает этот порт, но не публикует его наружу. приложение внутри работает на порту 8000
+      - "8000"
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
     depends_on:
       - postgres
       - mailhog
-    # Команда для запуска сервиса
     command: /start.sh
-    # Используемые сети
     networks:
       - authors-api
 
@@ -30,27 +26,42 @@ services:
       context: .
       dockerfile: ./docker/local/postgres/Dockerfile
     volumes:
-      - local_postgres_data:/var/lib/postgresql/data  # Том для данных PostgreSQL
-      - local_postgres_data_backups:/backups  # Том для резервных копий
+      - local_postgres_data:/var/lib/postgresql/data  # Данные PostgreSQL
+      - local_postgres_data_backups:/backups  # Бэкапы PostgreSQL
     env_file:
       - ./.envs/.local/.postgres
     networks:
       - authors-api
 
   mailhog:
-    image: mailhog/mailhog:v1.0.0  # Изображение из Docker Hub
+    image: mailhog/mailhog:v1.0.0
     container_name: mailhog
     ports:
-      - "8025:8025"  # Проброс порта
+      - "8025:8025"  # Mailhog web-интерфейс
+    networks:
+      - authors-api
+
+  nginx:
+    build:
+      context: ./docker/local/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # порт 80 внутри контейнера будет доступен на порту 8080 на хосте
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/mediafiles
+    depends_on:
+      - api
+    restart: always
     networks:
       - authors-api
 
 networks:
-    authors-api:
-        driver: bridge  # Используем драйвер моста
+  authors-api:
+    driver: bridge  # Сетевой драйвер типа "мост"
 
 volumes:
-    local_postgres_data: {}  # Том для данных PostgreSQL
-    local_postgres_data_backups: {}  # Том для резервных копий
-    static_volume:  # Том для статических файлов
-    media_volume:  # Том для медиафайлов
+  local_postgres_data: {}  # Том данных PostgreSQL
+  local_postgres_data_backups: {}  # Том бэкапов PostgreSQL
+  static_volume: {}  # Том статики
+  media_volume: {}  # Том медиафайлов
