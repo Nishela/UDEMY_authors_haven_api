@@ -72,6 +72,15 @@ RUN sed -i 's/\r$//g' /start.sh
 # Даем файлу start права на выполнение
 RUN chmod +x /start.sh
 
+COPY ./docker/local/django/celery/worker/start.sh /start-celeryworker.sh
+RUN sed -i 's/\r$//g' /start-celeryworker.sh
+RUN chmod +x /start-celeryworker.sh
+
+
+COPY ./docker/local/django/celery/flower/start.sh /start-flower.sh
+RUN sed -i 's/\r$//g' /start-flower.sh
+RUN chmod +x /start-flower.sh
+
 # Копируем содержимое текущей локальной директории в рабочую директорию контейнера (APP_HOME)
 COPY . ${APP_HOME}
 

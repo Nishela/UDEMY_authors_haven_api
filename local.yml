@@ -17,6 +17,7 @@ services:
     depends_on:
       - postgres
       - mailhog
+      - redis
     command: /start.sh
     networks:
       - authors-api
@@ -41,6 +42,46 @@ services:
     networks:
       - authors-api
 
+  redis:
+    image: redis:7-alpine
+    networks:
+      - authors-api
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    command: /start-celeryworker.sh
+    volumes:
+      - .:/app
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    depends_on:
+      - redis
+      - postgres
+      - mailhog
+    networks:
+      - authors-api
+
+  flower:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    command: /start-flower.sh
+    volumes:
+      - flower_data:/data
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - authors-api
+
   nginx:
     build:
       context: ./docker/local/nginx
@@ -61,7 +102,8 @@ networks:
     driver: bridge  # Сетевой драйвер типа "мост"
 
 volumes:
-  local_postgres_data: {}  # Том данных PostgreSQL
-  local_postgres_data_backups: {}  # Том бэкапов PostgreSQL
-  static_volume: {}  # Том статики
-  media_volume: {}  # Том медиафайлов
+  local_postgres_data: { }  # Том данных PostgreSQL
+  local_postgres_data_backups: { }  # Том бэкапов PostgreSQL
+  static_volume: { }  # Том статики
+  media_volume: { }  # Том медиафайлов
+  flower_data: { }  # Том данных Flower
