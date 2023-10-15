@@ -31,10 +31,10 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        represetnation = super().to_representation(instance)
+        representation = super().to_representation(instance)
         if instance.is_superuser:
-            represetnation["admin"] = True
-        return represetnation
+            representation["admin"] = True
+        return representation
 
 
 class CustomRegisterSerializer(RegisterSerializer):
