@@ -4,6 +4,7 @@ from core_apps.profiles.serializers import ProfileSerializer
 from .models import Article, ArticleView, Clap
 from ..bookmarks.models import Bookmark
 from ..bookmarks.serializers import BookmarkSerializer
+from ..responses.serializers import ResponseSerializer
 
 
 class TagLListField(serializers.Field):
@@ -32,8 +33,13 @@ class ArticleSerializer(serializers.ModelSerializer):
     bookmarks = serializers.SerializerMethodField()
     bookmarks_count = serializers.SerializerMethodField()
     claps_count = serializers.SerializerMethodField()
+    responses = ResponseSerializer(many=True, read_only=True)
+    responses_count = serializers.IntegerField(source="responses.count", read_only=True)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
+
+    def get_responses_count(self, obj):
+        return obj.responses.count()
 
     def get_average_rating(self, obj):
         return obj.average_rating()
@@ -103,6 +109,8 @@ class ArticleSerializer(serializers.ModelSerializer):
             "bookmarks",
             "bookmarks_count",
             "claps_count",
+            "responses",
+            "responses_count",
             "created_at",
             "updated_at",
         ]

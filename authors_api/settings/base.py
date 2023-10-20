@@ -58,6 +58,7 @@ LOCAL_APPS = [
     "core_apps.articles",
     "core_apps.ratings",
     "core_apps.bookmarks",
+    "core_apps.responses",
 ]
 
 INSTALLED_APPS = [
