@@ -49,6 +49,8 @@ THIRD_PARTY_APPS = [
     "dj_rest_auth",
     "dj_rest_auth.registration",
     "taggit",
+    "django_elasticsearch_dsl",
+    "django_elasticsearch_dsl_drf",
 ]
 
 LOCAL_APPS = [
@@ -59,6 +61,7 @@ LOCAL_APPS = [
     "core_apps.ratings",
     "core_apps.bookmarks",
     "core_apps.responses",
+    "core_apps.search",
 ]
 
 INSTALLED_APPS = [
@@ -156,6 +159,12 @@ MEDIA_ROOT = str(ROOT_DIR / "mediafiles")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_URLS_REGEX = r"^/api/.*$"
+
+ELASTICSEARCH_DSL = {
+    "default": {
+        "hosts": "es:9200",
+    },
+}
 
 LOGGING = {
     "version": 1,
