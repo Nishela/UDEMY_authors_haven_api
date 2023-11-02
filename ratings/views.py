@@ -25,6 +25,6 @@ class RatingCreateView(generics.CreateAPIView):
             raise ValidationError("article_id is required")
 
         try:
-            serializer.save(user=self.request.User, article=article)
+            serializer.save(user=self.request.user, article=article)
         except IntegrityError:
             raise YouHaveAlreadyRated

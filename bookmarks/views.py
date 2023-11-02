@@ -26,7 +26,7 @@ class BookmarkCreateView(generics.CreateAPIView):
         else:
             raise ValidationError("article_id is required")
         try:
-            serializer.save(user=self.request.User, article=article)
+            serializer.save(user=self.request.user, article=article)
         except IntegrityError:
             raise ValidationError("You have already bookmarked this article")
 
@@ -37,7 +37,7 @@ class BookmarkDestroyView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        user = self.request.User
+        user = self.request.user
         article_id = self.kwargs.get("article_id")
 
         try:
@@ -53,7 +53,7 @@ class BookmarkDestroyView(generics.DestroyAPIView):
         return bookmark
 
     def perform_destroy(self, instance):
-        user = self.request.User
+        user = self.request.user
         if instance.User != user:
             raise ValidationError("You cannot delete a bookmark that is not yours")
         instance.delete()

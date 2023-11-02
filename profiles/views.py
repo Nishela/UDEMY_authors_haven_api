@@ -35,7 +35,7 @@ class ProfileDetailAPIView(generics.RetrieveAPIView):
         return queryset
 
     def get_object(self):
-        user = self.request.User
+        user = self.request.user
         profile = self.get_queryset().get(user=user)
         return profile
 
@@ -47,7 +47,7 @@ class UpdateProfileAPIView(generics.RetrieveAPIView):
     renderer_classes = (ProfileJSONRender,)
 
     def get_object(self):
-        return self.request.User.profile
+        return self.request.user.profile
 
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -62,7 +62,7 @@ class FollowerListView(APIView):
 
     def get(self, request, format=None):
         try:
-            profile = Profile.objects.get(user__id=request.User.id)
+            profile = Profile.objects.get(user__id=request.user.id)
             follower_profiles = profile.followers.all()
             serializer = FollowingSerializer(follower_profiles, many=True)
             formatted_response = {
@@ -95,8 +95,8 @@ class FollowingListView(APIView):
 class FollowAPIView(APIView):
     def post(self, request, user_id, format=None):
         try:
-            follower = Profile.objects.get(user=self.request.User)
-            user_profile = request.User.profile
+            follower = Profile.objects.get(user=self.request.user)
+            user_profile = request.user.profile
             profile = Profile.objects.get(user__id=user_id)
 
             if profile == follower:
@@ -126,7 +126,7 @@ class FollowAPIView(APIView):
 
 class UnfollowAPIView(APIView):
     def post(self, request, user_id, *args, **kwargs):
-        user_profile = request.User.profile
+        user_profile = request.user.profile
         profile = Profile.objects.get(user__id=user_id)
 
         if not user_profile.check_following(profile):
