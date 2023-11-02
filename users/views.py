@@ -19,3 +19,6 @@ class UserViewSet(mixins.UpdateModelMixin, viewsets.ReadOnlyModelViewSet):
             "list": (permissions.IsAdminUser,)
         }
     )
+
+    def get_permissions(self):
+        return [permission() for permission in self.action_permissions[self.action]]
