@@ -1,0 +1,119 @@
+version: "3.9"
+
+services:
+  es:
+    image: elasticsearch:7.17.9
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - authors-api
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    volumes:
+      - .:/app:z  # Монтирование рабочей директории
+      - static_volume:/app/staticfiles  # Том статики
+      - media_volume:/app/mediafiles  # Том медиафайлов
+    expose: # контейнер слушает этот порт, но не публикует его наружу. приложение внутри работает на порту 8000
+      - "8000"
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    depends_on:
+      - postgres
+      - mailhog
+      - redis
+      - es
+    command: /start.sh
+    networks:
+      - authors-api
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./docker/local/postgres/Dockerfile
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data  # Данные PostgreSQL
+      - local_postgres_data_backups:/backups  # Бэкапы PostgreSQL
+    env_file:
+      - ./.envs/.local/.postgres
+    networks:
+      - authors-api
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.0
+    container_name: mailhog
+    ports:
+      - "8025:8025"  # Mailhog web-интерфейс
+    networks:
+      - authors-api
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - authors-api
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    command: /start-celeryworker.sh
+    volumes:
+      - .:/app
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    depends_on:
+      - redis
+      - postgres
+      - mailhog
+    networks:
+      - authors-api
+
+  flower:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    command: /start-flower.sh
+    volumes:
+      - flower_data:/data
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - authors-api
+
+  nginx:
+    build:
+      context: ./docker/local/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # порт 80 внутри контейнера будет доступен на порту 8080 на хосте
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/mediafiles
+    depends_on:
+      - api
+    restart: always
+    networks:
+      - authors-api
+
+networks:
+  authors-api:
+    driver: bridge  # Сетевой драйвер типа "мост"
+
+volumes:
+  local_postgres_data: { }  # Том данных PostgreSQL
+  local_postgres_data_backups: { }  # Том бэкапов PostgreSQL
+  static_volume: { }  # Том статики
+  media_volume: { }  # Том медиафайлов
+  flower_data: { }  # Том данных Flower

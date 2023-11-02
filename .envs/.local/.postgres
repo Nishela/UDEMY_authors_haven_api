@@ -1,0 +1,6 @@
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=authors-live
+POSTGRES_USER=author
+POSTGRES_PASSWORD=123qwe
+DATABASE_URL=postgres://author:123qwe@postgres:5432/authors-live
