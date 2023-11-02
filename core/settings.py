@@ -17,7 +17,7 @@ from split_settings.tools import include
 
 env = environ.Env()
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = env.bool("DEBUG", False)
 

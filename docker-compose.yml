@@ -5,7 +5,7 @@ networks:
     driver: bridge  # Сетевой драйвер типа "мост"
 
 volumes:
-  local_postgres_data: # Том данных PostgreSQL
+  local_postgres_data:  # Том данных PostgreSQL
   local_postgres_data_backups:  # Том бэкапов PostgreSQL
   static_volume:  # Том статики
   media_volume:  # Том медиафайлов

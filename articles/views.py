@@ -35,9 +35,9 @@ class ArticleListCreateView(generics.ListCreateAPIView):
     renderer_classes = [ArticlesJSONRenderer]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.User)
+        serializer.save(author=self.request.user)
         logger.info(
-            f"article {serializer.data.get('title')} created by {self.request.User.first_name}"
+            f"article {serializer.data.get('title')} created by {self.request.user.first_name}"
         )
 
 
@@ -50,7 +50,7 @@ class ArticleRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def perform_update(self, serializer):
-        instance = serializer.save(author=self.request.User)
+        instance = serializer.save(author=self.request.user)
         if "banner_image" in self.request.FILES:
             if (
                     instance.banner_image
@@ -70,7 +70,7 @@ class ArticleRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
         viewer_ip = request.META.get("REMOTE_ADDR", None)
         ArticleView.record_view(
-            article=instance, user=request.User, viewer_ip=viewer_ip
+            article=instance, user=request.user, viewer_ip=viewer_ip
         )
 
         return Response(serializer.data)
@@ -81,7 +81,7 @@ class ClapArticleView(generics.CreateAPIView, generics.DestroyAPIView):
     serializer_class = ClapSerializer
 
     def create(self, request, *args, **kwargs):
-        user = request.User
+        user = request.user
         article_id = kwargs.get("article_id")
         article = get_object_or_404(Article, id=article_id)
 
@@ -98,7 +98,7 @@ class ClapArticleView(generics.CreateAPIView, generics.DestroyAPIView):
         )
 
     def delete(self, request, *args, **kwargs):
-        user = request.User
+        user = request.user
         article_id = kwargs.get("article_id")
         article = get_object_or_404(Article, id=article_id)
 

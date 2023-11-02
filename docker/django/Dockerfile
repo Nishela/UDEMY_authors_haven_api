@@ -20,21 +20,13 @@ RUN pip wheel --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 # Стадия подготовки к выполнению
 FROM python AS python-run-stage
-# Определяем переменную для окружения (по умолчанию — local)
-ARG BUILD_ENVIRONMENT=local
 
-# Определение рабочего каталога
-ARG APP_HOME=/app
+# Установка рабочей директории
+WORKDIR /app
 
 # Установка переменных окружения Python для улучшения производительности
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-
-# Переменная для определения окружения сборки
-ENV BUILD_ENV ${BUILD_ENVIRONMENT}
-
-# Установка рабочей директории
-WORKDIR ${APP_HOME}
 
 # Обновляем пакеты и устанавливаем необходимые библиотеки для выполнения
 # После установки некоторые пакеты удаляются для экономии места
