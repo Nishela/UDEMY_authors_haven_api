@@ -15,9 +15,6 @@ if [ -z "${POSTGRES_USER}" ]; then
     export POSTGRES_USER="${base_postgres_image_default_user}"
 fi
 
-# Формирование строки подключения к базе данных
-export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-
 # Python-скрипт для проверки доступности PostgreSQL
 python << END
 import sys

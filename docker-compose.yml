@@ -1,7 +1,18 @@
 version: "3.9"
 
+networks:
+  authors-api:
+    driver: bridge  # Сетевой драйвер типа "мост"
+
+volumes:
+  local_postgres_data: # Том данных PostgreSQL
+  local_postgres_data_backups:  # Том бэкапов PostgreSQL
+  static_volume:  # Том статики
+  media_volume:  # Том медиафайлов
+  flower_data:  # Том данных Flower
+
 services:
-  es:
+  elasticsearch:
     image: elasticsearch:7.17.9
     environment:
       - discovery.type=single-node
@@ -13,7 +24,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./docker/local/django/Dockerfile
+      dockerfile: docker/django/Dockerfile
     volumes:
       - .:/app:z  # Монтирование рабочей директории
       - static_volume:/app/staticfiles  # Том статики
@@ -21,13 +32,12 @@ services:
     expose: # контейнер слушает этот порт, но не публикует его наружу. приложение внутри работает на порту 8000
       - "8000"
     env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+      - .env
     depends_on:
       - postgres
       - mailhog
       - redis
-      - es
+      - elasticsearch
     command: /start.sh
     networks:
       - authors-api
@@ -35,12 +45,12 @@ services:
   postgres:
     build:
       context: .
-      dockerfile: ./docker/local/postgres/Dockerfile
+      dockerfile: docker/postgres/Dockerfile
     volumes:
       - local_postgres_data:/var/lib/postgresql/data  # Данные PostgreSQL
       - local_postgres_data_backups:/backups  # Бэкапы PostgreSQL
     env_file:
-      - ./.envs/.local/.postgres
+      - .env
     networks:
       - authors-api
 
@@ -60,13 +70,12 @@ services:
   celery_worker:
     build:
       context: .
-      dockerfile: ./docker/local/django/Dockerfile
+      dockerfile: docker/django/Dockerfile
     command: /start-celeryworker.sh
     volumes:
       - .:/app
     env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+      - .env
     depends_on:
       - redis
       - postgres
@@ -77,13 +86,12 @@ services:
   flower:
     build:
       context: .
-      dockerfile: ./docker/local/django/Dockerfile
+      dockerfile: docker/django/Dockerfile
     command: /start-flower.sh
     volumes:
       - flower_data:/data
     env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+      - .env
     ports:
       - "5555:5555"
     depends_on:
@@ -94,7 +102,7 @@ services:
 
   nginx:
     build:
-      context: ./docker/local/nginx
+      context: docker/nginx
       dockerfile: Dockerfile
     ports:
       - "8080:80" # порт 80 внутри контейнера будет доступен на порту 8080 на хосте
@@ -106,14 +114,3 @@ services:
     restart: always
     networks:
       - authors-api
-
-networks:
-  authors-api:
-    driver: bridge  # Сетевой драйвер типа "мост"
-
-volumes:
-  local_postgres_data: { }  # Том данных PostgreSQL
-  local_postgres_data_backups: { }  # Том бэкапов PostgreSQL
-  static_volume: { }  # Том статики
-  media_volume: { }  # Том медиафайлов
-  flower_data: { }  # Том данных Flower
