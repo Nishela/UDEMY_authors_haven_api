@@ -1,59 +1,59 @@
 build:
-	docker compose -f local.yml up --build -d --remove-orphans
+	docker compose up --build -d --remove-orphans
 
 up:
-	docker compose -f local.yml up -d
+	docker compose up -d
 
 down:
-	docker compose -f local.yml down
+	docker compose down
 
 show-logs:
-	docker compose -f local.yml logs
+	docker compose logs
 
 show-logs-api:
-	docker compose -f local.yml logs api
+	docker compose logs api
 
 makemigrations:
-	docker compose -f local.yml run --rm api python manage.py makemigrations
+	docker compose run --rm api python manage.py makemigrations
 
 migrate:
-	docker compose -f local.yml run --rm api python manage.py migrate
+	docker compose run --rm api python manage.py migrate
 
 collectstatic:
-	docker compose -f local.yml run --rm api python manage.py collectstatic --no-input --clear
+	docker compose run --rm api python manage.py collectstatic --no-input --clear
 
 superuser:
-	docker compose -f local.yml run --rm api python manage.py createsuperuser
+	docker compose run --rm api python manage.py createsuperuser
 
 down-v:
-	docker compose -f local.yml down -v
+	docker compose down -v
 
 volume:
 	docker volume inspect udemy_authors_haven_api_local_postgres_data
 
 authors-db:
-	docker compose -f local.yml exec postgres psql --username=author --dbname=authors-live
+	docker compose exec postgres psql --username=author --dbname=authors-live
 
 flake8:
-	docker compose -f local.yml exec api flake8 .
+	docker compose exec api flake8 .
 
 black-check:
-	docker compose -f local.yml exec api black --check --exclude=migrations .
+	docker compose exec api black --check --exclude=migrations .
 
 black-diff:
-	docker compose -f local.yml exec api black --diff --exclude=migrations .
+	docker compose exec api black --diff --exclude=migrations .
 
 black:
-	docker compose -f local.yml exec api black --exclude=migrations .
+	docker compose exec api black --exclude=migrations .
 
 isort-check:
-	docker compose -f local.yml exec api isort . --check-only --skip venv --skip migrations
+	docker compose exec api isort . --check-only --skip venv --skip migrations
 
 isort-diff:
-	docker compose -f local.yml exec api isort . --diff --skip venv --skip migrations
+	docker compose exec api isort . --diff --skip venv --skip migrations
 
 isort:
-	docker compose -f local.yml exec api isort . --skip venv --skip migrations
+	docker compose exec api isort . --skip venv --skip migrations
 
 shell:
-	docker compose -f local.yml run --rm api python manage.py shell
+	docker compose run --rm api python manage.py shell

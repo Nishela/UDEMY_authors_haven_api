@@ -6,8 +6,6 @@ FROM python:${PYTHON_VERSION} AS python
 
 # Стадия сборки зависимостей
 FROM python AS python-build-stage
-# Определяем переменную для окружения сборки (по умолчанию — local)
-ARG BUILD_ENVIRONMENT=local
 
 # Обновляем пакеты и устанавливаем необходимые для сборки библиотеки
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -15,10 +13,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     libpq-dev
 
 # Копируем файл с зависимостями в контейнер
-COPY ./requirements .
+COPY ./requirements.txt .
 
 # Собираем зависимости в wheels (бинарные пакеты)
-RUN pip wheel --wheel-dir /usr/src/app/wheels -r ${BUILD_ENVIRONMENT}.txt
+RUN pip wheel --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 # Стадия подготовки к выполнению
 FROM python AS python-run-stage
@@ -54,7 +52,7 @@ RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
     && rm -rf /wheels/
 
 # Копируем файл entrypoint из локального каталога в корень файловой системы контейнера
-COPY ./docker/local/django/entrypoint.sh /entrypoint.sh
+COPY ./docker/django/entrypoint.sh /entrypoint.sh
 
 # Удаляем символы возврата каретки (\r), что может быть полезно,
 # если файл был создан или редактировался в Windows, чтобы избежать проблем с запуском файла в Linux
@@ -64,7 +62,7 @@ RUN sed -i 's/\r$//g' /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Копируем файл start из локального каталога в корень файловой системы контейнера
-COPY ./docker/local/django/start.sh /start.sh
+COPY ./docker/django/start.sh /start.sh
 
 # Удаляем символы возврата каретки (\r) из файла start (по той же причине, что и выше)
 RUN sed -i 's/\r$//g' /start.sh
@@ -72,12 +70,12 @@ RUN sed -i 's/\r$//g' /start.sh
 # Даем файлу start права на выполнение
 RUN chmod +x /start.sh
 
-COPY ./docker/local/django/celery/worker/start.sh /start-celeryworker.sh
+COPY ./docker/django/celery/worker/start.sh /start-celeryworker.sh
 RUN sed -i 's/\r$//g' /start-celeryworker.sh
 RUN chmod +x /start-celeryworker.sh
 
 
-COPY ./docker/local/django/celery/flower/start.sh /start-flower.sh
+COPY ./docker/django/celery/flower/start.sh /start-flower.sh
 RUN sed -i 's/\r$//g' /start-flower.sh
 RUN chmod +x /start-flower.sh
 
